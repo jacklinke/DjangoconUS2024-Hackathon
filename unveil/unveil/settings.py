@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from platformshconfig import Config
 
 from platformshconfig import Config
 

@@ -88,6 +88,7 @@ if not use_platformsh:
         }
     }
 else:
+    config = Config()
     credentials = config.credentials('database')
     DATABASES = {
         'default': {
@@ -99,7 +100,7 @@ else:
         }
     }
 
-    
+
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 

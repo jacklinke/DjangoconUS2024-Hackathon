@@ -16,6 +16,9 @@ dependencies = [
     "redis>=5.0.8",
     "sqlparse>=0.5.1",
     "typing-extensions>=4.12.2",
+    "platformshconfig>=2.4.0",
+    "environs>=11.0.0",
+    "pillow>=10.4.0",
 ]
 
 [tool.uv]

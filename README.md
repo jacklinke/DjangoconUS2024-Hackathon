@@ -7,7 +7,7 @@ Repository for the Djangocon US 2024 Hackathon by the Unveil Team
 - [@Michael Riley](https://github.com/ErriteEpticRikez)
 - [@Tim Babiy](https://github.com/tba)
 - [@Brad Stricherz](https://github.com/tba)
-- [@Jack Link](https://github.com/tba)
+- [@Jack Linke](https://github.com/jacklinke)
 
 ## Goals
 
@@ -30,3 +30,12 @@ Repository for the Djangocon US 2024 Hackathon by the Unveil Team
 - Option to upload art in either portrait or landscape orientation.
 - Ability to create collections of art.
 - Moderation tools and reporting for the artist, and for reporting artwork that violates the terms of service.
+
+
+
+## Development
+
+### Frontend
+
+### Backend
+

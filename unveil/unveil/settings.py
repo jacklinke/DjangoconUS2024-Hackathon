@@ -11,9 +11,12 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+
+from environs import Env
 from platformshconfig import Config
 
-from platformshconfig import Config
+env = Env()
+env.read_env()  # read .env file, if it exists
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -40,6 +43,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "apps.users",
     "apps.core",
 ]
 
@@ -77,7 +81,7 @@ WSGI_APPLICATION = "unveil.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-use_platformsh = False
+use_platformsh = env("USE_PLATFORMSH", False)
 
 if not use_platformsh:
     DATABASES = {
@@ -92,14 +96,14 @@ if not use_platformsh:
     }
 else:
     config = Config()
-    credentials = config.credentials('database')
+    credentials = config.credentials("database")
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': credentials['path'],
-            'USER': credentials['username'],
-            'PASSWORD': credentials['password'],
-            'HOST': credentials['host']
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": credentials["path"],
+            "USER": credentials["username"],
+            "PASSWORD": credentials["password"],
+            "HOST": credentials["host"],
         }
     }
 
@@ -121,6 +125,8 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
+
+AUTH_USER_MODEL = "users.UserAccount"
 
 
 # Internationalization

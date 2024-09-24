@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:unveil_frontend/pages/UploadArt.dart';
 import 'package:unveil_frontend/pages/account.dart';
 import 'package:unveil_frontend/pages/viewArtWork.dart';
+import 'package:unveil_frontend/pages/login.dart'; // Import your Login page
+import 'package:unveil_frontend/pages/signup.dart'; // Import your Sign-up page
+import 'package:unveil_frontend/services/APIService.dart';
 import 'package:unveil_frontend/widgets/minimalnavbar.dart';
 
 void main() {
   runApp(const ArtGalleryApp());
 }
 
-class ArtGalleryApp extends StatelessWidget {
+class ArtGalleryApp extends StatelessWidget { 
   const ArtGalleryApp({super.key});
 
   @override
@@ -57,7 +60,7 @@ class ArtGalleryApp extends StatelessWidget {
           buttonColor: Colors.white,
         ),
       ),
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.light,
       home: const MainView(),
     );
   }
@@ -72,14 +75,21 @@ class MainView extends StatefulWidget {
 
 class _MainViewState extends State<MainView> {
   int currentIndex = 0;
+  bool isAuthenticated = false; // Add authentication state
 
- final List<Widget> pages = [
-   const ViewArt(),
-  const UploadArt(),
-  const Account(),
-];
+  final List<Widget> authPages = [
+    const ViewArt(),
+    const UploadArt(),
+    Account(),
+  ];
 
-  final List<String> navItems = ['View', 'Upload', 'Account'];
+  final List<Widget> unauthPages = [
+    const LoginPage(), // Your login page widget
+    const SignUpPage(), // Your sign-up page widget
+  ];
+
+  final List<String> navItemsAuthenticated = ['View', 'Upload', 'Account'];
+  final List<String> navItemsUnauthenticated = ['Login', 'Sign Up'];
 
   void _onPageSelected(int index) {
     setState(() {
@@ -90,15 +100,23 @@ class _MainViewState extends State<MainView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-      ),
-      body: pages[currentIndex], // Display the selected page
-      bottomNavigationBar: MinimalNavBar(
-        items: navItems,
-        selectedIndex: currentIndex,
-        onItemSelected: _onPageSelected,
-        locations: pages, // Pass the pages list here
+      appBar: AppBar(),
+      body: isAuthenticated 
+          ? authPages[currentIndex] // Display the authenticated pages
+          : unauthPages[currentIndex], // Display the unauthenticated pages
+      bottomNavigationBar: BottomNavigationBar(
+        items: isAuthenticated 
+            ? navItemsAuthenticated.map((item) => BottomNavigationBarItem(icon: const Icon(Icons.art_track), label: item)).toList()
+            : navItemsUnauthenticated.map((item) => BottomNavigationBarItem(icon: const Icon(Icons.login), label: item)).toList(),
+        currentIndex: currentIndex,
+        onTap: (index) {
+          if (isAuthenticated || index < 2) { // Only allow navigation for unauthenticated to login/signup
+            _onPageSelected(index);
+          }
+        },
       ),
     );
   }
 }
+
+

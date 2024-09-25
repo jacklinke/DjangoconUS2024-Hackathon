@@ -1,0 +1,26 @@
+volumes:
+  unveil_postgres_data: {}
+  unveil_postgres_data_backups: {}
+
+services:
+
+  postgres:
+    build:
+      context: .
+      dockerfile: ./compose/postgres/Dockerfile
+    image: unveil_postgres
+    container_name: postgres
+    volumes:
+      - unveil_postgres_data:/var/lib/postgresql/data:Z
+      - unveil_postgres_data_backups:/backups:z
+    env_file:
+      - .env
+    ports:
+      - "25432:5432"
+    networks:
+      - base
+
+
+networks:
+  base:
+    driver: bridge

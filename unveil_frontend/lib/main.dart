@@ -4,7 +4,6 @@ import 'package:unveil_frontend/pages/account.dart';
 import 'package:unveil_frontend/pages/viewArtWork.dart';
 import 'package:unveil_frontend/pages/login.dart'; // Import your Login page
 import 'package:unveil_frontend/pages/signup.dart'; // Import your Sign-up page
-import 'package:unveil_frontend/services/APIService.dart';
 import 'package:unveil_frontend/widgets/minimalnavbar.dart';
 
 void main() {

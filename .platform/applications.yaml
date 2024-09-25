@@ -1,0 +1,64 @@
+unveil_backend:
+  type: python:3.12
+  source:
+    root: unveil
+  relationships:
+    database: "database:postgresql"
+  # The configuration of app when it is exposed to the web.
+  web:
+    # Whether your app should speak to the webserver via TCP or Unix socket
+    # https://docs.platform.sh/configuration/app-containers.html#upstream
+    upstream:
+      socket_family: unix
+    # Commands are run once after deployment to start the application process.
+    commands:
+      start: "gunicorn -w 4 -b unix:$SOCKET DonationStoreV2NewSite.wsgi:application"
+    locations:
+      "/":
+        passthru: true
+      "/static":
+        root: "static"
+        expires: 1h
+        allow: true
+
+# The size of the persistent disk of the application (in MB).
+  disk: 1024
+  # Set a local R/W mount for logs
+  mounts:
+    'logs':
+      source: local
+      source_path: logs
+    'media':
+      source: local
+      source_path: media
+
+
+# The hooks executed at various points in the lifecycle of the application.
+  hooks:
+    # The build hook runs before the application is deployed, and is useful for
+    # assembling the codebase.
+    build: |
+      pip3 install -r requirements.txt
+
+      mkdir logs
+      python3 manage.py collectstatic
+      rm -rf logs
+    deploy: |
+      python3 manage.py migrate
+
+unveil_frontend:
+  type: nodejs:20
+  source:
+    root: unveil_app_frontend
+
+  # The web key configures the web server running in front of your app.
+  web:
+    locations:
+      /:
+        # Static site generators usually output built static files to a specific directory.
+        # Define this directory (must be an actual directory inside the root directory of your app)
+        # as the root for your static site.
+        root: "public"
+        # Files to consider when serving a request for a directory.
+        index:
+          - index.html

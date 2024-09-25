@@ -28,11 +28,15 @@ class _ViewArtState extends State<ViewArt> {
   ];
 
   int currentIndex = 0;
+  bool liked = false;
+  bool disliked = false;
 
   // Method to go to the next artwork
   void _nextArtwork() {
     setState(() {
       currentIndex = (currentIndex + 1) % artworks.length; // Loop back to start
+      liked = false; // Reset likes and dislikes when changing artwork
+      disliked = false;
     });
   }
 
@@ -40,6 +44,31 @@ class _ViewArtState extends State<ViewArt> {
   void _previousArtwork() {
     setState(() {
       currentIndex = (currentIndex - 1 + artworks.length) % artworks.length; // Loop back to end
+      liked = false; // Reset likes and dislikes when changing artwork
+      disliked = false;
+    });
+  }
+
+  // Toggle the like or dislike status
+  void _toggleLike() {
+    setState(() {
+      if (liked) {
+        liked = false; // Untoggle like
+      } else {
+        liked = true; // Toggle like
+        disliked = false; // Disable dislike if liked
+      }
+    });
+  }
+
+  void _toggleDislike() {
+    setState(() {
+      if (disliked) {
+        disliked = false; // Untoggle dislike
+      } else {
+        disliked = true; // Toggle dislike
+        liked = false; // Disable like if disliked
+      }
     });
   }
 
@@ -157,6 +186,30 @@ class _ViewArtState extends State<ViewArt> {
                     ),
                     textAlign: TextAlign.center,
                   ),
+                ),
+                const SizedBox(height: 20),
+                // Like and Dislike buttons with toggle
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Like button
+                    IconButton(
+                      onPressed: _toggleLike,
+                      icon: Icon(
+                        Icons.thumb_up,
+                        color: liked ? const Color.fromARGB(255, 0, 0, 0) : Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(width: 30),
+                    // Dislike button
+                    IconButton(
+                      onPressed: _toggleDislike,
+                      icon: Icon(
+                        Icons.thumb_down,
+                        color: disliked ? const Color.fromARGB(255, 0, 0, 0) : Colors.grey,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

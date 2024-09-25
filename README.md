@@ -46,3 +46,20 @@ Repository for the Djangocon US 2024 Hackathon by the Unveil Team
 - Effective use of time (Use time given, but don’t go over) - **1 point**
 - If working on a team: Demonstrate collaboration - **2 points**
 - If working solo: Demonstrate how you overcame blocker - **2 points**
+
+
+## Local Development
+
+You can run a copy of the Postgres database in docker compose.
+
+Copy the `.env.local` file to `.env` and update the values as needed.
+
+```bash
+docker-compose up -d
+```
+
+Then you can run the Django server.
+
+```bash
+python manage.py runserver
+```

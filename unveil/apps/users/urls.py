@@ -1,6 +1,6 @@
 """URLs for the unveil users app."""
 
-from django.contrib.auth.models import User
+from apps.users.models import UserAccount
 from django.urls import path
 from ninja import Router
 from ninja.security import django_auth
@@ -11,9 +11,9 @@ router = Router()
 
 
 @router.get("/account/create")
-def create_account(request, given_username: str, given_password: str, given_email: str):
+def create_account(request, given_name: str, given_password: str, given_email: str):
     """Create a new user account."""
-    User.objects.create_user(username=given_username, password=given_password, email=given_email)
+    UserAccount.objects.create_user(name=given_name, password=given_password, email=given_email)
     return {"success": True}
 
 

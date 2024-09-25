@@ -3,15 +3,15 @@
 from apps.core.models import Artwork, Comment, Follow, Profile, Sentiment, View
 from django.contrib.auth.models import User
 from django.urls import path
-from ninja import NinjaAPI
+from ninja import NinjaAPI, Router
 from ninja.files import UploadedFile
 
 urlpatterns = []
 
-api = NinjaAPI()
+router = Router()
 
 
-@api.post("/artwork/upload")
+@router.post("/artwork/upload")
 def upload_image(request, image: UploadedFile, title: str, content: str, orientation: str):
     """Upload an artwork to the server."""
     user = request.user
@@ -26,7 +26,7 @@ def upload_image(request, image: UploadedFile, title: str, content: str, orienta
     return {"success": True, "artwork_id": artwork.id}
 
 
-@api.post("/artwork/comments/post")
+@router.post("/artwork/comments/post")
 def post_comment(request, artwork_id: int, comment: str):
     """Post a comment on an artwork."""
     user = request.user
@@ -40,14 +40,14 @@ def post_comment(request, artwork_id: int, comment: str):
         return {"success": True, "comment_id": comment.id}
 
 
-@api.get("/artwork/comments/get")
+@router.get("/artwork/comments/get")
 def get_comments(request, artwork_id: int):
     """Get comments for an artwork."""
     comments = Comment.objects.filter(artwork_id=artwork_id)
     return {"success": True, "comments": comments}
 
 
-@api.get("/artwork/like")
+@router.get("/artwork/like")
 def like_artwork(request, artwork_id: int):
     """Like an artwork."""
     user = request.user
@@ -58,7 +58,7 @@ def like_artwork(request, artwork_id: int):
         return {"success": True}
 
 
-@api.get("/artwork/dislike")
+@router.get("/artwork/dislike")
 def dislike_artwork(request, artwork_id: int):
     """Dislike an artwork."""
     user = request.user
@@ -69,21 +69,21 @@ def dislike_artwork(request, artwork_id: int):
         return {"success": True}
 
 
-@api.get("/profile/follows/count")
+@router.get("/profile/follows/count")
 def get_follower_count(request, profile_id: int):
     """Get the number of followers for a profile."""
     profile = Profile.objects.get(id=profile_id)
     return {"success": True, "follower_count": profile.get_followers_count()}
 
 
-@api.get("/profile/following/count")
+@router.get("/profile/following/count")
 def get_following_count(request, profile_id: int):
     """Get the number of profiles a profile is following."""
     profile = Profile.objects.get(id=profile_id)
     return {"success": True, "following_count": profile.get_following_count()}
 
 
-@api.get("/profile/follow")
+@router.get("/profile/follow")
 def follow_profile(request, profile_id: int):
     """Follow a profile."""
     user = request.user
@@ -95,7 +95,7 @@ def follow_profile(request, profile_id: int):
         return {"success": True}
 
 
-@api.get("/profile/unfollow")
+@router.get("/profile/unfollow")
 def unfollow_profile(request, profile_id: int):
     """Unfollow a profile."""
     user = request.user
@@ -107,7 +107,7 @@ def unfollow_profile(request, profile_id: int):
         return {"success": True}
 
 
-@api.get("/profile/following")
+@router.get("/profile/following")
 def get_following(request, profile_id: int):
     """Get the profiles that a profile is following."""
     profile = Profile.objects.get(id=profile_id)
@@ -115,7 +115,7 @@ def get_following(request, profile_id: int):
     return {"success": True, "following": following}
 
 
-@api.get("/profile/followers")
+@router.get("/profile/followers")
 def get_followers(request, profile_id: int):
     """Get the profiles that are following a profile."""
     profile = Profile.objects.get(id=profile_id)
@@ -123,7 +123,7 @@ def get_followers(request, profile_id: int):
     return {"success": True, "followers": followers}
 
 
-@api.get("/artwork/views")
+@router.get("/artwork/views")
 def get_views(request, artwork_id: int):
     """Get the profiles that have viewed an artwork."""
     artwork = Artwork.objects.get(id=artwork_id)
@@ -131,21 +131,21 @@ def get_views(request, artwork_id: int):
     return {"success": True, "views": views}
 
 
-@api.get("/artwork/likes/count")
+@router.get("/artwork/likes/count")
 def get_likes_count(request, artwork_id: int):
     """Get the number of likes for an artwork."""
     artwork = Artwork.objects.get(id=artwork_id)
     return {"success": True, "likes_count": artwork.get_likes_count()}
 
 
-@api.get("/artwork/dislikes/count")
+@router.get("/artwork/dislikes/count")
 def get_dislikes_count(request, artwork_id: int):
     """Get the number of dislikes for an artwork."""
     artwork = Artwork.objects.get(id=artwork_id)
     return {"success": True, "dislikes_count": artwork.get_dislikes_count()}
 
 
-@api.get("/artwork/views/count")
+@router.get("/artwork/views/count")
 def get_views_count(request, artwork_id: int):
     """Get the number of views for an artwork."""
     artwork = Artwork.objects.get(id=artwork_id)

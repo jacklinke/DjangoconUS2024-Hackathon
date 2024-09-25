@@ -111,6 +111,7 @@ class LoginPage extends StatelessWidget {
                 // Sign Up Link
                 TextButton(
                   onPressed: () {
+                  
                     // Navigate to sign up page (implement navigation logic)
                     print('Navigate to Sign Up');
                   },

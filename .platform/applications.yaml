@@ -39,9 +39,7 @@ unveil_backend:
     # assembling the codebase.
     build: |
       pip3 install -r requirements.txt
-
       mkdir logs
-      python3 manage.py collectstatic
       rm -rf logs
     deploy: |
       python3 manage.py migrate

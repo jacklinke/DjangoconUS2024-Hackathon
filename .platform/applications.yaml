@@ -50,7 +50,6 @@ unveil_frontend:
   type: nodejs:20
   source:
     root: unveil_app_frontend
-  type: "nodejs:20"
 
   # The web key configures the web server running in front of your app.
   web:

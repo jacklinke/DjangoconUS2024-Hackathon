@@ -33,8 +33,7 @@ class Profile(models.Model):
 
     following = models.ManyToManyField("self", through="Follow", symmetrical=False, related_name="followed")
 
-    likes = models.ManyToManyField("core.Artwork", through="Like", related_name="liked_by")
-    dislikes = models.ManyToManyField("core.Artwork", through="Dislike", related_name="disliked_by")
+    sentiment = models.ManyToManyField("core.Artwork", through="Sentiment", related_name="sentiment_by")
     comments = models.ManyToManyField("core.Artwork", through="Comment", related_name="commented_by")
     views = models.ManyToManyField("core.Artwork", through="View", related_name="viewed_by")
 
@@ -60,11 +59,11 @@ class Profile(models.Model):
 
     def get_likes_count(self):
         """Get the number of likes that the profile has given."""
-        return self.likes.count()
+        return self.sentiment.filter(status=Sentiment.LikeChoices.LIKE).count()
 
     def get_dislikes_count(self):
         """Get the number of dislikes that the profile has given."""
-        return self.dislikes.count()
+        return self.sentiment.filter(status=Sentiment.LikeChoices.DISLIKE).count()
 
 
 class Follow(models.Model):
@@ -83,49 +82,48 @@ class Follow(models.Model):
         verbose_name = "Follow"
         verbose_name_plural = "Follows"
 
-        constraints = [models.UniqueConstraint(fields=["follower", "following"], name="unique_following")]
+        constraints = [models.UniqueConstraint(fields=["following_profile", "followed_profile"], name="unique_following")]
 
     def __str__(self):
         return f"{self.following_profile} follows {self.followed_profile}"
 
 
-class Like(models.Model):
-    """A Through-Model for likes."""
+class Sentiment(models.Model):
+    """A Through-Model for sentiment about an artwork.
+    
+    If a profile likes an artwork, a Sentiment object is created with the status as Like.
+    If a profile dislikes an artwork, a Sentiment object is created with the status as Dislike.
+    If there is no sentiment, the profile has not interacted with the artwork.
+    """
 
-    profile = models.ForeignKey("core.Profile", on_delete=models.CASCADE)
-    artwork = models.ForeignKey("core.Artwork", on_delete=models.CASCADE)
+    profile = models.ForeignKey("core.Profile", on_delete=models.CASCADE, related_name="profile_sentiment")
+    artwork = models.ForeignKey("core.Artwork", on_delete=models.CASCADE, related_name="artwork_sentiment")
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    class LikeChoices(models.TextChoices):
+        """Choices for the like status."""
 
-    class Meta:
-        """Meta class for the Like model."""
+        LIKE = "LIK", _("Like")
+        DISLIKE = "DIS", _("Dislike")
 
-        verbose_name = "Like"
-        verbose_name_plural = "Likes"
-
-        constraints = [models.UniqueConstraint(fields=["profile", "artwork"], name="unique_like")]
-
-    def __str__(self):
-        return f"{self.profile} liked {self.artwork}"
-
-
-class Dislike(models.Model):
-    """A Through-Model for dislikes."""
-
-    profile = models.ForeignKey("core.Profile", on_delete=models.CASCADE)
-    artwork = models.ForeignKey("core.Artwork", on_delete=models.CASCADE)
+    status = models.CharField(
+        max_length=3,
+        choices=LikeChoices.choices,
+        default=LikeChoices.LIKE,
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        """Meta class for the Dislike model."""
+        """Meta class for the Sentiment model."""
 
-        verbose_name = "Dislike"
-        verbose_name_plural = "Dislikes"
+        verbose_name = "Sentiment"
+        verbose_name_plural = "Sentiments"
 
-        constraints = [models.UniqueConstraint(fields=["profile", "artwork"], name="unique_dislike")]
+        constraints = [models.UniqueConstraint(fields=["profile", "artwork"], name="unique_sentiment")]
 
     def __str__(self):
+        if self.status == self.LikeChoices.LIKE:
+            return f"{self.profile} liked {self.artwork}"
         return f"{self.profile} disliked {self.artwork}"
 
 
@@ -134,6 +132,7 @@ class Comment(models.Model):
 
     profile = models.ForeignKey("core.Profile", on_delete=models.CASCADE, help_text=_("The profile of the commenter."))
     artwork = models.ForeignKey("core.Artwork", on_delete=models.CASCADE)
+    
 
     body = models.TextField()
 
@@ -149,7 +148,6 @@ class Comment(models.Model):
         verbose_name_plural = "Comments"
         ordering = ["-created_at"]
         indexes = [models.Index(fields=["created_at"])]
-        constraints = [models.UniqueConstraint(fields=["profile", "artwork", "comment"], name="unique_comment")]
 
     def __str__(self):
         return f"{self.profile} commented on {self.artwork}"
@@ -184,15 +182,41 @@ class ArtworkQuerySet(models.QuerySet):
 
         ```python
         profile = Profile.objects.get(pk=1)
+        # or
+        profile = request.user.profile
+        
         artwork = Artwork.objects.get_random_for_profile(profile)
         ```
         """
         max_id = self.all().aggregate(max_id=Max("id"))["max_id"]
         while True:
             pk = randint(1, max_id)
-            category = self.filter(pk=pk).filter(viewed_by=profile).first()
-            if category:
-                return category
+            artwork = self.filter(pk=pk).filter(viewed_by=profile).first()
+            if artwork:
+                return artwork
+
+    def get_artwork_for_profile(self, profile, limit=5):
+        """Get random artworks for the profile.
+
+        Usage:
+
+        ```python
+        profile = Profile.objects.get(pk=1)
+        # or
+        profile = request.user.profile
+        
+        artworks = Artwork.objects.get_artwork_for_profile(profile, limit=10)
+        ```
+        """
+        return self.filter(viewed_by=profile).order_by("?")[:limit]
+
+    def get_popular(self):
+        """Get the most popular artworks."""
+        return self.annotate(like_count=models.Count("liked_by")).order_by("-like_count")
+
+    def get_recent(self, limit=5):
+        """Get the most recent artworks."""
+        return self.order_by("-created_at")[:limit]
 
 
 class Artwork(models.Model):
@@ -235,11 +259,11 @@ class Artwork(models.Model):
 
     def get_like_count(self):
         """Get the number of likes for the artwork."""
-        return self.liked_by.count()
+        return self.sentiment_by.filter(status=Sentiment.LikeChoices.LIKE).count()
 
     def get_dislike_count(self):
         """Get the number of dislikes for the artwork."""
-        return self.disliked_by.count()
+        return self.sentiment_by.filter(status=Sentiment.LikeChoices.DISLIKE).count()
 
     def get_comment_count(self):
         """Get the number of comments for the artwork."""

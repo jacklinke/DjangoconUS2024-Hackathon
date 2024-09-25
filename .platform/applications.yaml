@@ -12,7 +12,7 @@ unveil_backend:
       socket_family: unix
     # Commands are run once after deployment to start the application process.
     commands:
-      start: "gunicorn -w 4 -b unix:$SOCKET DonationStoreV2NewSite.wsgi:application"
+      start: "gunicorn -w 4 -b unix:$SOCKET unveil.wsgi:application"
     locations:
       "/":
         passthru: true
@@ -39,9 +39,7 @@ unveil_backend:
     # assembling the codebase.
     build: |
       pip3 install -r requirements.txt
-
       mkdir logs
-      python3 manage.py collectstatic
       rm -rf logs
     deploy: |
       python3 manage.py migrate
@@ -58,7 +56,18 @@ unveil_frontend:
         # Static site generators usually output built static files to a specific directory.
         # Define this directory (must be an actual directory inside the root directory of your app)
         # as the root for your static site.
-        root: "public"
+        root: "unveil"
         # Files to consider when serving a request for a directory.
         index:
           - index.html
+        scripts: false
+        allow: true
+        # Set caching policy
+        expires: 24h
+        rules:
+            \.(css|js|gif|jpe?g|png|svg)$:
+                expires: 4w
+    commands:
+        # Run a no-op process that uses no CPU resources since this is a static site
+        start: sleep infinity
+    

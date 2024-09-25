@@ -56,7 +56,7 @@ unveil_frontend:
         # Static site generators usually output built static files to a specific directory.
         # Define this directory (must be an actual directory inside the root directory of your app)
         # as the root for your static site.
-        root: "unveil_app_frontend"
+        root: "unveil"
         # Files to consider when serving a request for a directory.
         index:
           - index.html

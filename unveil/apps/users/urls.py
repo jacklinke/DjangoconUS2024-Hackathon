@@ -48,7 +48,7 @@ class AuthBearer(HttpBearer):
 
 auth = AuthBearer()
 
-@router.post("/login")
+@router.post("/account/login")
 def login(request, username: str, password: str):
     user = authenticate(username=username, password=password)
     if user is not None:

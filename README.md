@@ -6,10 +6,9 @@ Repository for the Djangocon US 2024 Hackathon by the Unveil Team
 
 - [@Michael Riley](https://github.com/ErriteEpticRikez)
 - [@Tim Babiy](https://github.com/tba)
-- [@Brad Stricherz](https://github.com/tba)
 - [@Jack Linke](https://github.com/jacklinke)
 
-## Goals
+## Project Goals
 
 - Create a platform for artists to share their art with the world, where the focus is on the art and not the artist.
 
@@ -31,11 +30,19 @@ Repository for the Djangocon US 2024 Hackathon by the Unveil Team
 - Ability to create collections of art.
 - Moderation tools and reporting for the artist, and for reporting artwork that violates the terms of service.
 
-
-
 ## Development
 
 ### Frontend
 
 ### Backend
 
+## Hackathon Rules
+
+- Did project use Django - **2 points**
+- Clarity of presentation - **3 points**
+- Problem statement is given and project addresses that problem - **3 points**
+- Originality (this can include building off an example idea in a creative way) - **2 points**
+- Ability to respond to questions - **3 points**
+- Effective use of time (Use time given, but don’t go over) - **1 point**
+- If working on a team: Demonstrate collaboration - **2 points**
+- If working solo: Demonstrate how you overcame blocker - **2 points**

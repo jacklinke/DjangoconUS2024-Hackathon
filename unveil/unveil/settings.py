@@ -80,7 +80,7 @@ WSGI_APPLICATION = "unveil.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-use_platformsh = env.bool("USE_PLATFORMSH", "false")
+use_platformsh = env("USE_PLATFORMSH", "false")
 
 if use_platformsh.lower() == "false":
     DATABASES = {

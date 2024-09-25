@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:unveil_frontend/main.dart';
+import 'package:unveil_frontend/services/Auth.dart'; // Make sure to import your AuthService
 
 class LoginPage extends StatelessWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -8,6 +9,7 @@ class LoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final TextEditingController emailController = TextEditingController();
     final TextEditingController passwordController = TextEditingController();
+    final AuthService authService = AuthService(); // Instantiate AuthService
 
     return Scaffold(
       body: Center(
@@ -22,7 +24,7 @@ class LoginPage extends StatelessWidget {
                   color: Colors.black.withOpacity(0.2),
                   spreadRadius: 4,
                   blurRadius: 20,
-                  offset: Offset(0, 4),
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
@@ -72,14 +74,29 @@ class LoginPage extends StatelessWidget {
 
                 // Login Button
                 ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     final email = emailController.text;
                     final password = passwordController.text;
-                    print('Email: $email, Password: $password');
+
+                    // Call the AuthService login method
+                    bool success = await authService.login(email, password);
                     
+                    if (success) {
+                      // Handle successful login, navigate to the next page
+                      print('Login successful');
+                      // Navigate to the home page or dashboard
+                    } else {
+                      // Handle login failure, show a message
+                      print('Login failed');
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Login failed. Please try again.')),
+                      );
+                    }
                   },
                   style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white, backgroundColor: Colors.black, padding: const EdgeInsets.symmetric(vertical: 16.0), // White text color
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 16.0), // White text color
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8.0),
                     ),

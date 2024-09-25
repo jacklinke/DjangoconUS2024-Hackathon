@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:unveil_frontend/services/Auth.dart'; // Make sure to import your AuthService
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({Key? key}) : super(key: key);
@@ -12,16 +13,22 @@ class _SignUpPageState extends State<SignUpPage> {
   String username = '';
   String email = '';
   String password = '';
+  final AuthService authService = AuthService();
 
-  void _signUp() {
+  void _signUp() async {
     if (_formKey.currentState!.validate()) {
-      // Simulate sign-up process
-      print('Username: $username');
-      print('Email: $email');
-      print('Password: $password');
+      // Call sign up method
+      final success = await authService.signUp(username, email, password);
 
-      // Optionally navigate to another page after successful sign-up
-      // Navigator.pushReplacementNamed(context, '/home');
+      if (success) {
+        // Optionally navigate to another page after successful sign-up
+        Navigator.pushReplacementNamed(context, '/home');
+      } else {
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Sign up failed. Please try again.')),
+        );
+      }
     }
   }
 
@@ -138,7 +145,9 @@ class _SignUpPageState extends State<SignUpPage> {
                   ElevatedButton(
                     onPressed: _signUp,
                     style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white, backgroundColor: Colors.black, padding: const EdgeInsets.symmetric(vertical: 16.0), // White text color
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 16.0), // White text color
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),
                       ),

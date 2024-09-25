@@ -82,7 +82,9 @@ class Follow(models.Model):
         verbose_name = "Follow"
         verbose_name_plural = "Follows"
 
-        constraints = [models.UniqueConstraint(fields=["following_profile", "followed_profile"], name="unique_following")]
+        constraints = [
+            models.UniqueConstraint(fields=["following_profile", "followed_profile"], name="unique_following")
+        ]
 
     def __str__(self):
         return f"{self.following_profile} follows {self.followed_profile}"
@@ -90,7 +92,7 @@ class Follow(models.Model):
 
 class Sentiment(models.Model):
     """A Through-Model for sentiment about an artwork.
-    
+
     If a profile likes an artwork, a Sentiment object is created with the status as Like.
     If a profile dislikes an artwork, a Sentiment object is created with the status as Dislike.
     If there is no sentiment, the profile has not interacted with the artwork.
@@ -132,7 +134,6 @@ class Comment(models.Model):
 
     profile = models.ForeignKey("core.Profile", on_delete=models.CASCADE, help_text=_("The profile of the commenter."))
     artwork = models.ForeignKey("core.Artwork", on_delete=models.CASCADE)
-    
 
     body = models.TextField()
 
@@ -184,7 +185,7 @@ class ArtworkQuerySet(models.QuerySet):
         profile = Profile.objects.get(pk=1)
         # or
         profile = request.user.profile
-        
+
         artwork = Artwork.objects.get_random_for_profile(profile)
         ```
         """
@@ -204,7 +205,7 @@ class ArtworkQuerySet(models.QuerySet):
         profile = Profile.objects.get(pk=1)
         # or
         profile = request.user.profile
-        
+
         artworks = Artwork.objects.get_artwork_for_profile(profile, limit=10)
         ```
         """

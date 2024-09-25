@@ -20,8 +20,9 @@ from apps.users.urls import router as users_router
 from django.contrib import admin
 from django.urls import path
 from ninja import NinjaAPI
+from ninja.security import django_auth
 
-api = NinjaAPI()
+api = NinjaAPI(csrf=True)
 
 api.add_router("", core_router)
 api.add_router("", users_router)

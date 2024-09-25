@@ -21,7 +21,7 @@ def upload_image(request, image: UploadedFile, title: str, content: str, orienta
         return {"success": False, "error": "User not authenticated"}
 
     profile = user.profile
-    
+
     artwork = Artwork(user=user, image=image, title=title, content=content, orientation=orientation, profile=profile)
     artwork.save()
 
@@ -36,7 +36,7 @@ def post_comment(request, artwork_id: int, comment: str):
         return {"success": False, "error": "User not authenticated"}
 
     profile = user.profile
-    
+
     try:
         artwork = Artwork.objects.get(id=artwork_id)
     except Artwork.DoesNotExist:

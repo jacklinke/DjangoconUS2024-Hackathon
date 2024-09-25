@@ -12,7 +12,6 @@ urlpatterns = [
 api = NinjaAPI()
 
 
-#TODO Look up how to properly integrate the Profile model into this endpoint
 @api.post("/upload_image")
 def upload_image(request, image: UploadedFile, title: str, content: str, orientation: str):
     user = request.user
@@ -91,7 +90,6 @@ def get_comments(request, artwork_id: int):
 def get_views_count(request, artwork_id: int):
     artwork = Artwork.objects.get(id=artwork_id)
     return {"success": True, "views_count": artwork.get_views_count()}
-
 
 
 

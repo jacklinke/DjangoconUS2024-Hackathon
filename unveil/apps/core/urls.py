@@ -1,14 +1,17 @@
 """URLs for the unveil core app."""
 
+from typing import List
+
 from apps.core.models import Artwork, Comment, Follow, Profile, Sentiment, View
 from django.contrib.auth.models import User
 from django.urls import path
-from ninja import Router
+from ninja import Router, Schema
 from ninja.files import UploadedFile
 
 urlpatterns = []
 
 router = Router()
+
 
 @router.post("/artwork/upload")
 def upload_image(request, image: UploadedFile, title: str, content: str, orientation: str):
@@ -18,6 +21,7 @@ def upload_image(request, image: UploadedFile, title: str, content: str, orienta
         return {"success": False, "error": "User not authenticated"}
 
     profile = user.profile
+
     artwork = Artwork(user=user, image=image, title=title, content=content, orientation=orientation, profile=profile)
     artwork.save()
 
@@ -30,9 +34,13 @@ def post_comment(request, artwork_id: int, comment: str):
     user = request.user
     if not user.is_authenticated:
         return {"success": False, "error": "User not authenticated"}
-    
+
     profile = user.profile
-    artwork = Artwork.objects.get(id=artwork_id)
+
+    try:
+        artwork = Artwork.objects.get(id=artwork_id)
+    except Artwork.DoesNotExist:
+        return {"success": False, "error": "Artwork does not exist"}
     comment = Comment(user=user, artwork=artwork, comment=comment, profile=profile)
     comment.save()
     return {"success": True, "comment_id": comment.id}
@@ -44,9 +52,12 @@ def get_comments(request, artwork_id: int):
     user = request.user
     if not user.is_authenticated:
         return {"success": False, "error": "User not authenticated"}
-    
-    comments = Comment.objects.filter(artwork_id=artwork_id)
-    return {"success": True, "comments": comments}
+
+    try:
+        comments = Comment.objects.filter(artwork_id=artwork_id)
+    except Comment.DoesNotExist:
+        return {"success": False, "error": "Artwork does not exist"}
+    return {"success": True, "comments": list(comments)}
 
 
 @router.get("/artwork/like")
@@ -55,7 +66,7 @@ def like_artwork(request, artwork_id: int):
     user = request.user
     if not user.is_authenticated:
         return {"success": False, "error": "User not authenticated"}
-    
+
     Sentiment.objects.create(profile=user.profile, artwork_id=artwork_id, status=Sentiment.LikeChoices.LIKE)
     return {"success": True}
 
@@ -66,7 +77,7 @@ def dislike_artwork(request, artwork_id: int):
     user = request.user
     if not user.is_authenticated:
         return {"success": False, "error": "User not authenticated"}
-    
+
     Sentiment.objects.create(profile=user.profile, artwork_id=artwork_id, status=Sentiment.LikeChoices.DISLIKE)
     return {"success": True}
 
@@ -77,8 +88,11 @@ def get_follower_count(request, profile_id: int):
     user = request.user
     if not user.is_authenticated:
         return {"success": False, "error": "User not authenticated"}
-    
-    profile = Profile.objects.get(id=profile_id)
+
+    try:
+        profile = Profile.objects.get(account_id=profile_id)
+    except Profile.DoesNotExist:
+        return {"success": False, "error": "Profile does not exist"}
     return {"success": True, "follower_count": profile.get_followers_count()}
 
 
@@ -88,8 +102,11 @@ def get_following_count(request, profile_id: int):
     user = request.user
     if not user.is_authenticated:
         return {"success": False, "error": "User not authenticated"}
-    
-    profile = Profile.objects.get(id=profile_id)
+
+    try:
+        profile = Profile.objects.get(account_id=profile_id)
+    except Profile.DoesNotExist:
+        return {"success": False, "error": "Profile does not exist"}
     return {"success": True, "following_count": profile.get_following_count()}
 
 
@@ -99,8 +116,11 @@ def follow_profile(request, profile_id: int):
     user = request.user
     if not user.is_authenticated:
         return {"success": False, "error": "User not authenticated"}
-    
-    profile = Profile.objects.get(id=profile_id)
+
+    try:
+        profile = Profile.objects.get(account_id=profile_id)
+    except Profile.DoesNotExist:
+        return {"success": False, "error": "Profile does not exist"}
     Follow.objects.create(following_profile=user.profile, followed_profile=profile)
     return {"success": True}
 
@@ -111,8 +131,11 @@ def unfollow_profile(request, profile_id: int):
     user = request.user
     if not user.is_authenticated:
         return {"success": False, "error": "User not authenticated"}
-    
-    profile = Profile.objects.get(id=profile_id)
+
+    try:
+        profile = Profile.objects.get(account_id=profile_id)
+    except Profile.DoesNotExist:
+        return {"success": False, "error": "Profile does not exist"}
     Follow.objects.get(following_profile=user.profile, followed_profile=profile).delete()
     return {"success": True}
 
@@ -123,10 +146,13 @@ def get_following(request, profile_id: int):
     user = request.user
     if not user.is_authenticated:
         return {"success": False, "error": "User not authenticated"}
-    
-    profile = Profile.objects.get(id=profile_id)
+
+    try:
+        profile = Profile.objects.get(account_id=profile_id)
+    except Profile.DoesNotExist:
+        return {"success": False, "error": "Profile does not exist"}
     following = Follow.objects.filter(following_profile=profile)
-    return {"success": True, "following": following}
+    return {"success": True, "following": list(following)}
 
 
 @router.get("/profile/followers")
@@ -135,10 +161,13 @@ def get_followers(request, profile_id: int):
     user = request.user
     if not user.is_authenticated:
         return {"success": False, "error": "User not authenticated"}
-    
-    profile = Profile.objects.get(id=profile_id)
+
+    try:
+        profile = Profile.objects.get(account_id=profile_id)
+    except Profile.DoesNotExist:
+        return {"success": False, "error": "Profile does not exist"}
     followers = Follow.objects.filter(followed_profile=profile)
-    return {"success": True, "followers": followers}
+    return {"success": True, "followers": list(followers)}
 
 
 @router.get("/artwork/views")
@@ -147,10 +176,13 @@ def get_views(request, artwork_id: int):
     user = request.user
     if not user.is_authenticated:
         return {"success": False, "error": "User not authenticated"}
-    
-    artwork = Artwork.objects.get(id=artwork_id)
+
+    try:
+        artwork = Artwork.objects.get(id=artwork_id)
+    except Artwork.DoesNotExist:
+        return {"success": False, "error": "Artwork does not exist"}
     views = View.objects.filter(artwork=artwork)
-    return {"success": True, "views": views}
+    return {"success": True, "views": list(views)}
 
 
 @router.get("/artwork/likes/count")
@@ -159,8 +191,11 @@ def get_likes_count(request, artwork_id: int):
     user = request.user
     if not user.is_authenticated:
         return {"success": False, "error": "User not authenticated"}
-    
-    artwork = Artwork.objects.get(id=artwork_id)
+
+    try:
+        artwork = Artwork.objects.get(id=artwork_id)
+    except Artwork.DoesNotExist:
+        return {"success": False, "error": "Artwork does not exist"}
     return {"success": True, "likes_count": artwork.get_likes_count()}
 
 
@@ -170,8 +205,11 @@ def get_dislikes_count(request, artwork_id: int):
     user = request.user
     if not user.is_authenticated:
         return {"success": False, "error": "User not authenticated"}
-    
-    artwork = Artwork.objects.get(id=artwork_id)
+
+    try:
+        artwork = Artwork.objects.get(id=artwork_id)
+    except Artwork.DoesNotExist:
+        return {"success": False, "error": "Artwork does not exist"}
     return {"success": True, "dislikes_count": artwork.get_dislikes_count()}
 
 
@@ -181,6 +219,9 @@ def get_views_count(request, artwork_id: int):
     user = request.user
     if not user.is_authenticated:
         return {"success": False, "error": "User not authenticated"}
-    
-    artwork = Artwork.objects.get(id=artwork_id)
+
+    try:
+        artwork = Artwork.objects.get(id=artwork_id)
+    except Artwork.DoesNotExist:
+        return {"success": False, "error": "Artwork does not exist"}
     return {"success": True, "views_count": artwork.get_views_count()}

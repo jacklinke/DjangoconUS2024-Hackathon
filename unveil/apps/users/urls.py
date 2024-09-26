@@ -6,8 +6,7 @@ import jwt
 from apps.users.models import UserAccount
 from django.conf import settings
 from django.contrib.auth import authenticate
-from django.urls import path
-from ninja import Router
+from ninja import Form, Router
 from ninja.security import HttpBearer, django_auth
 
 urlpatterns = []
@@ -62,7 +61,7 @@ def bearer(request):
 
 
 @router.post("/account/login")
-def login(request, email: str, password: str):
+def login(request, email: Form[str], password: Form[str]):
     """Login to the user account."""
     user = authenticate(request, email=email, password=password)
 

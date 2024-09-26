@@ -252,6 +252,7 @@ def get_following_count(request, profile_id: int):
         return {"success": False, "error": "Profile does not exist"}
     return {"success": True, "following_count": profile.get_following_count()}
 
+
 @router.get("/profile/following")
 def get_following(request, profile_id: int):
     """Get the profiles that a profile is following."""
@@ -280,4 +281,3 @@ def get_followers(request, profile_id: int):
         return {"success": False, "error": "Profile does not exist"}
     followers = Follow.objects.filter(followed_profile=profile)
     return {"success": True, "followers": list(followers)}
-

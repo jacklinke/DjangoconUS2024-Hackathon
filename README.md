@@ -5,7 +5,7 @@ Repository for the Djangocon US 2024 Hackathon by the Unveil Team
 ## Team Members
 
 - [@Michael Riley](https://github.com/ErriteEpticRikez)
-- [@Tim Babiy](https://github.com/tba)
+- [@Tim Babiy](https://github.com/yellow-grape)
 - [@Jack Linke](https://github.com/jacklinke)
 
 ## Project Goals

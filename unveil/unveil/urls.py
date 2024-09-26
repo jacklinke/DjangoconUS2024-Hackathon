@@ -22,7 +22,7 @@ from django.urls import path
 from ninja import NinjaAPI
 from ninja.security import django_auth
 
-api = NinjaAPI(csrf=True)
+api = NinjaAPI(csrf=False)
 
 api.add_router("", core_router)
 api.add_router("", users_router)

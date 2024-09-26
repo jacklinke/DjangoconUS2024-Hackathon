@@ -7,7 +7,7 @@ from apps.users.models import UserAccount
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.urls import path
-from ninja import Router
+from ninja import Router, Form
 from ninja.security import HttpBearer, django_auth
 
 urlpatterns = []
@@ -47,9 +47,8 @@ class AuthBearer(HttpBearer):
 
 auth = AuthBearer()
 
-
 @router.post("/account/login")
-def login(request, name: str, email: str, password: str):
+def login(request, name: Form[str], email: Form[str], password: Form[str]):
     """Login to the user account."""
     user = authenticate(request, name=name, email=email, password=password)
     if user is not None:

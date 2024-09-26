@@ -65,6 +65,7 @@ def bearer(request):
 def login(request, email: str, password: str):
     """Login to the user account."""
     user = authenticate(request, email=email, password=password)
+
     if user is not None:
         token = create_token(user)
         return {"token": token}

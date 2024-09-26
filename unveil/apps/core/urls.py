@@ -280,3 +280,4 @@ def get_followers(request, profile_id: int):
         return {"success": False, "error": "Profile does not exist"}
     followers = Follow.objects.filter(followed_profile=profile)
     return {"success": True, "followers": list(followers)}
+

@@ -1,5 +1,7 @@
 """Models for the unveil users app."""
 
+import uuid
+
 from django.contrib.auth.models import (
     AbstractBaseUser,
     BaseUserManager,
@@ -10,11 +12,11 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 
-class UserProfileManager(BaseUserManager):
-    """Manager for user profiles."""
+class UserAccountManager(BaseUserManager):
+    """Manager for user accounts."""
 
     def create_user(self, email, name, password=None):
-        """Create a new user profile"""
+        """Create a new user account."""
         if not email:
             raise ValueError("User must have an email address")
 
@@ -27,7 +29,7 @@ class UserProfileManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, name, password):
-        """Create a new superuser profile"""
+        """Create a new superuser account."""
         user = self.create_user(email, name, password)
         user.is_superuser = True
         user.is_staff = True
@@ -39,6 +41,8 @@ class UserProfileManager(BaseUserManager):
 
 class UserAccount(AbstractBaseUser, PermissionsMixin):
     """Model for custom user accounts."""
+
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True)
 
     email = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=255, default="None")
@@ -52,12 +56,12 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
         _("active"),
         default=True,
         help_text=_(
-            "Designates whether this user should be treated as active. " "Unselect this instead of deleting accounts."
+            "Designates whether this user should be treated as active. Unselect this instead of deleting accounts."
         ),
     )
     date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
 
-    objects = UserProfileManager()
+    objects = UserAccountManager()
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["name"]

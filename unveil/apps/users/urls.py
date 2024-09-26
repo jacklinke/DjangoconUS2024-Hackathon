@@ -30,7 +30,7 @@ def create_account(request, given_name: str, given_password: str, given_email: s
 @router.get("/account/test", auth=django_auth)
 def test_user(request):
     """Test the authenticated user."""
-    return f"Authenticated user {request.auth}"
+    return f"Authenticated user {request.auth} with UUID {request.auth.uuid}"
 
 
 def create_token(user):

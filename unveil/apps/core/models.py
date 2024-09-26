@@ -1,5 +1,6 @@
 """Models for the unveil core app."""
 
+import uuid
 from random import randint
 
 from django.db import models
@@ -9,6 +10,8 @@ from django.utils.translation import gettext_lazy as _
 
 class Profile(models.Model):
     """Model for user profiles."""
+
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True)
 
     account = models.OneToOneField(
         "users.UserAccount", on_delete=models.CASCADE, primary_key=True, related_name="profile"
@@ -133,6 +136,8 @@ class Sentiment(models.Model):
 class Comment(models.Model):
     """A Through-Model for non-threaded comments."""
 
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True)
+
     profile = models.ForeignKey("core.Profile", on_delete=models.CASCADE, help_text=_("The profile of the commenter."))
     artwork = models.ForeignKey("core.Artwork", on_delete=models.CASCADE)
 
@@ -231,6 +236,8 @@ class ArtworkQuerySet(models.QuerySet):
 
 class Artwork(models.Model):
     """Model for artwork."""
+
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True)
 
     class Orientation(models.TextChoices):
         """Choices for the orientation of the artwork."""

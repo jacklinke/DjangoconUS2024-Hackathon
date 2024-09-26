@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "corsheaders",
     "apps.users",
     "apps.core",
 ]
@@ -50,7 +49,6 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -82,9 +80,9 @@ WSGI_APPLICATION = "unveil.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-use_platformsh = env.bool("USE_PLATFORMSH", False)
+use_platformsh = env("USE_PLATFORMSH", "false")
 
-if not use_platformsh:
+if use_platformsh.lower() == "false":
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
@@ -151,10 +149,3 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-# CORS settings
-CORS_ORIGIN_WHITELIST = ["https://localhost:8000", "https://localhost:8080", "https://localhost:9009"]
-
-CORS_ALLOWED_ORIGINS = ["https://localhost", "https://127.0.0.1", "https://0.0.0.0"]
-
-CSRF_TRUSTED_ORIGINS = ["https://localhost", "https://127.0.0.1", "https://0.0.0.0"]

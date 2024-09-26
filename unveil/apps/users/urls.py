@@ -1,24 +1,30 @@
 """URLs for the unveil users app."""
 
+from datetime import datetime, timedelta
+
+import jwt
 from apps.users.models import UserAccount
+from django.conf import settings
+from django.contrib.auth import authenticate
 from django.urls import path
 from ninja import Router
-from ninja.security import django_auth
-from ninja.security import HttpBearer
-from django.contrib.auth import authenticate
-from django.conf import settings
-from datetime import datetime, timedelta
-import jwt
+from ninja.security import HttpBearer, django_auth
 
 urlpatterns = []
 
 router = Router()
 
 
-@router.get("/account/create")
+@router.post("/account/create")
 def create_account(request, given_name: str, given_password: str, given_email: str):
-    """Create a new user account."""
-    UserAccount.objects.create_user(name=given_name, password=given_password, email=given_email)
+    """Create a new user account and associated Profile."""
+    from apps.core.models import Profile
+
+    try:
+        account = UserAccount.objects.create_user(name=given_name, password=given_password, email=given_email)
+        Profile.objects.create(account=account)
+    except Exception as e:
+        return {"error": str(e)}
     return {"success": True}
 
 
@@ -27,30 +33,38 @@ def test_user(request):
     """Test the authenticated user."""
     return f"Authenticated user {request.auth}"
 
+
 def create_token(user):
-    payload = {
-        'user_id': user.id,
-        'exp': datetime.utcnow() + timedelta(days=1),
-        'iat': datetime.utcnow()
-    }
-    return jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+    """Create a JWT token for the user."""
+    payload = {"user_id": user.id, "exp": datetime.utcnow() + timedelta(days=1), "iat": datetime.utcnow()}
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+
 
 class AuthBearer(HttpBearer):
+    """Bearer token authentication class."""
+
     def authenticate(self, request, token):
+        """Authenticate the bearer token."""
         try:
-            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
-            user_id = payload.get('user_id')
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+            user_id = payload.get("user_id")
             if user_id:
                 return user_id
         except jwt.PyJWTError:
             pass
         return None
 
-auth = AuthBearer()
+
+@router.get("/bearer", auth=AuthBearer())
+def bearer(request):
+    """Test the bearer token."""
+    return {"token": request.auth}
+
 
 @router.post("/account/login")
-def login(request, username: str, password: str):
-    user = authenticate(username=username, password=password)
+def login(request, email: str, password: str):
+    """Login to the user account."""
+    user = authenticate(request, email=email, password=password)
     if user is not None:
         token = create_token(user)
         return {"token": token}

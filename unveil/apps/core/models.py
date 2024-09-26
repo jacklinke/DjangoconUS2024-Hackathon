@@ -10,6 +10,10 @@ from django.utils.translation import gettext_lazy as _
 class Profile(models.Model):
     """Model for user profiles."""
 
+    account = models.OneToOneField(
+        "users.UserAccount", on_delete=models.CASCADE, primary_key=True, related_name="profile"
+    )
+
     class ProfileType(models.TextChoices):
         """Choices for the type of profile."""
 
@@ -17,19 +21,16 @@ class Profile(models.Model):
         AUDIENCE = "AUD", _("Audience")
         BOTH = "BOT", _("Both")
 
-    account = models.OneToOneField(
-        "users.UserAccount", on_delete=models.CASCADE, primary_key=True, related_name="profile"
-    )
     profile_type = models.CharField(
         max_length=3,
         choices=ProfileType.choices,
         default=ProfileType.AUDIENCE,
     )
 
-    profile_picture = models.ImageField(upload_to="profiles")
-    bio = models.TextField()
-    location = models.CharField(max_length=30)
-    websites = models.JSONField(default=dict, help_text=_("Websites associated with the user."))
+    profile_picture = models.ImageField(upload_to="profiles", blank=True)
+    bio = models.TextField(blank=True)
+    location = models.CharField(max_length=30, blank=True)
+    websites = models.JSONField(default=dict, help_text=_("Websites associated with the user."), blank=True)
 
     following = models.ManyToManyField("self", through="Follow", symmetrical=False, related_name="followed")
 
@@ -176,7 +177,7 @@ class View(models.Model):
 class ArtworkQuerySet(models.QuerySet):
     """Custom QuerySet for the Artwork model."""
 
-    def get_random_for_profile(self, profile):
+    def get_random_artwork_for_profile(self, profile, limit=5):
         """Get a random artwork that the profile has not viewed.
 
         Usage:
@@ -186,18 +187,26 @@ class ArtworkQuerySet(models.QuerySet):
         # or
         profile = request.user.profile
 
-        artwork = Artwork.objects.get_random_for_profile(profile)
+        artwork = Artwork.objects.get_random_for_profile(profile, limit=5)
         ```
         """
-        max_id = self.all().aggregate(max_id=Max("id"))["max_id"]
+        max_id = self.all().aggregate(max_id=Max("id"))["max_id"] or 1
+        print(f"Max ID: {max_id}")
+        artwork_list = []
+        run_count = 0
         while True:
+            run_count += 1
             pk = randint(1, max_id)
             artwork = self.filter(pk=pk).filter(viewed_by=profile).first()
             if artwork:
-                return artwork
+                artwork_list.append(artwork)
+            # Break if the loop runs for too long (e.g. all artworks have been viewed) or if the limit is reached
+            if run_count == limit * 3 or len(artwork_list) == limit:
+                break
+        return artwork_list
 
-    def get_artwork_for_profile(self, profile, limit=5):
-        """Get random artworks for the profile.
+    def get_ordered_artwork_for_profile(self, profile, start=0, limit=5):
+        """Get unseen artworks for the profile in chronological order.
 
         Usage:
 
@@ -206,10 +215,10 @@ class ArtworkQuerySet(models.QuerySet):
         # or
         profile = request.user.profile
 
-        artworks = Artwork.objects.get_artwork_for_profile(profile, limit=10)
+        artworks = Artwork.objects.get_artwork_for_profile(profile, start=0, limit=5)
         ```
         """
-        return self.filter(viewed_by=profile).order_by("?")[:limit]
+        return self.exclude(viewed_by=profile)[start : start + limit]
 
     def get_popular(self):
         """Get the most popular artworks."""

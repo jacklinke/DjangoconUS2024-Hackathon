@@ -1,11 +1,9 @@
 """URLs for the unveil core app."""
 
-from typing import List, Optional
+from typing import Optional
 
 from apps.core.models import Artwork, Comment, Follow, Profile, Sentiment, View
-from django.contrib.auth.models import User
-from django.urls import path
-from ninja import Router, Schema
+from ninja import Router
 from ninja.files import UploadedFile
 
 urlpatterns = []
